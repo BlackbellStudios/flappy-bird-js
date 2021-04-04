@@ -1,5 +1,6 @@
 console.log("AllanDav1d - Portifolio www.allandavid.com.br");
 
+let frame = 0;
 const sound_HIT = new Audio();
 sound_HIT.src = './efeitos/hit.wav';
 
@@ -35,28 +36,7 @@ const background = {
     }
 }
 
-const floor = {
-    srcX: 0,
-    srcY: 610,
-    largura: 224,
-    altura: 112,
-    x: 0,
-    y: canvas.height - 112,
 
-    draw() {
-        ctx.drawImage(
-            sprites,
-            floor.srcX, floor.srcY, floor.largura, floor.altura,
-            floor.x, floor.y, floor.largura, floor.altura
-        );
-
-        ctx.drawImage(
-            sprites,
-            floor.srcX, floor.srcY, floor.largura, floor.altura,
-            (floor.x + floor.largura), floor.y, floor.largura, floor.altura
-        );
-    }
-}
 
 function isCollider(flappyBird, floor){
 const flappyBirdY = flappyBird.y + flappyBird.altura;
@@ -66,6 +46,38 @@ if(flappyBirdY >= floorY){
     return true;
 }
     return false;
+}
+
+function instantiateFloor(){
+    const floor = {
+        srcX: 0,
+        srcY: 610,
+        largura: 224,
+        altura: 112,
+        x: 0,
+        y: canvas.height - 112,
+    update(){
+        const movementFloor = 1;
+        const repetY = floor.largura / 2;
+        const move = floor.x - movementFloor;
+
+        floor.x = move % repetY;
+    },
+        draw() {
+            ctx.drawImage(
+                sprites,
+                floor.srcX, floor.srcY, floor.largura, floor.altura,
+                floor.x, floor.y, floor.largura, floor.altura
+            );
+    
+            ctx.drawImage(
+                sprites,
+                floor.srcX, floor.srcY, floor.largura, floor.altura,
+                (floor.x + floor.largura), floor.y, floor.largura, floor.altura
+            );
+        }
+    }
+    return floor;
 }
 
 function instantiateFlappyBird(){
@@ -81,7 +93,7 @@ function instantiateFlappyBird(){
         gravidade: 0.25,
     
         update() {
-            if(isCollider(flappyBird, floor)){
+            if(isCollider(flappyBird, globais.floor)){
                 flappyBird.draw();
                 sound_HIT.play();
 
@@ -100,10 +112,31 @@ function instantiateFlappyBird(){
         jump(){
             flappyBird.velocidade = - flappyBird.pulo;
         },
+        frames:[
+            {srcX: 0, srcY: 0, },
+            {srcX: 0, srcY: 26,},
+            {srcX: 0, srcY: 52,},
+            {srcX: 0, srcY: 26,},
+        ],
+        currentFrame: 0,
+        updateCurrentFrame(){
+            const frameInterval = 10;
+            const frameIntervalPass = frame % frameInterval === 0;
+
+            if(frameIntervalPass){
+                const baseIncrement = 1;
+                const increment = baseIncrement + flappyBird.currentFrame;
+                const baseRepet = flappyBird.frames.length;
+                flappyBird.currentFrame = increment % baseRepet;
+            }
+            
+        },
         draw() {
+            flappyBird.updateCurrentFrame();
+            const { srcX, srcY } = flappyBird.frames[flappyBird.currentFrame];
             ctx.drawImage(
                 sprites,
-                flappyBird.srcX, flappyBird.srcY, //Sprite X, SpriteY
+                srcX, srcY, //Sprite X, SpriteY
                 flappyBird.largura, flappyBird.altura, //Tamanho do recorte
                 flappyBird.x, flappyBird.y, //Posição no canvas
                 flappyBird.largura, flappyBird.altura //Tamanho da imagem dentro do canvas
@@ -112,8 +145,6 @@ function instantiateFlappyBird(){
     }
     return flappyBird;
 }
-
-
 
 const mensagemGetReady = {
     srcX: 134,
@@ -148,7 +179,7 @@ const Screens = {
     JOGO: {
         draw() {
             background.draw();
-            floor.draw();
+            globais.floor.draw();
 
             globais.flappyBird.update();
         },
@@ -156,7 +187,7 @@ const Screens = {
             globais.flappyBird.jump();
         },
         update() {
-
+            globais.floor.update();
         }
     },
     GAMEOVER: {
@@ -170,17 +201,18 @@ const Screens = {
     INICIO: {
         start(){
             globais.flappyBird = instantiateFlappyBird();
+            globais.floor = instantiateFloor();
         },
         draw() {
             background.draw();
-            floor.draw();
+            globais.floor.draw();
 
             globais.flappyBird.draw();
 
             mensagemGetReady.draw();
         },
         update() {
-
+            globais.floor.update();
         },
         click(){
             changeScreen(Screens.JOGO);
@@ -192,6 +224,7 @@ function Loop() {
     currentScreen.draw();
     currentScreen.update();
 
+    frame = frame + 1;
     requestAnimationFrame(Loop);
 }
 
