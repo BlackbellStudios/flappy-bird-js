@@ -1,5 +1,8 @@
 console.log("AllanDav1d - Portifolio www.allandavid.com.br");
 
+const sound_HIT = new Audio();
+sound_HIT.src = './efeitos/hit.wav';
+
 const sprites = new Image();
 sprites.src = './sprites.png';
 
@@ -55,33 +58,62 @@ const floor = {
     }
 }
 
-const flappyBird = {
-    srcX: 0,
-    srcY: 0,
-    largura: 33,
-    altura: 24,
-    x: 10,
-    y: 60,
-    velocidade: 0,
-    gravidade: 0.25,
+function isCollider(flappyBird, floor){
+const flappyBirdY = flappyBird.y + flappyBird.altura;
+const floorY = floor.y;
 
-    instantiate() {
-        flappyBird.velocidade = flappyBird.velocidade + flappyBird.gravidade;
-        flappyBird.y = flappyBird.y + flappyBird.velocidade;
-
-        flappyBird.draw();
-    },
-
-    draw() {
-        ctx.drawImage(
-            sprites,
-            flappyBird.srcX, flappyBird.srcY, //Sprite X, SpriteY
-            flappyBird.largura, flappyBird.altura, //Tamanho do recorte
-            flappyBird.x, flappyBird.y, //Posição no canvas
-            flappyBird.largura, flappyBird.altura //Tamanho da imagem dentro do canvas
-        );
-    }
+if(flappyBirdY >= floorY){
+    return true;
 }
+    return false;
+}
+
+function instantiateFlappyBird(){
+    const flappyBird = {
+        srcX: 0,
+        srcY: 0,
+        largura: 33,
+        altura: 24,
+        x: 10,
+        y: 60,
+        pulo:4.6,
+        velocidade: 0,
+        gravidade: 0.25,
+    
+        update() {
+            if(isCollider(flappyBird, floor)){
+                flappyBird.draw();
+                sound_HIT.play();
+
+                setTimeout(() => {
+                    changeScreen(Screens.INICIO);
+                }, 500);
+                
+                return;
+            }
+    
+            flappyBird.velocidade = flappyBird.velocidade + flappyBird.gravidade;
+            flappyBird.y = flappyBird.y + flappyBird.velocidade;
+    
+            flappyBird.draw();
+        },
+        jump(){
+            flappyBird.velocidade = - flappyBird.pulo;
+        },
+        draw() {
+            ctx.drawImage(
+                sprites,
+                flappyBird.srcX, flappyBird.srcY, //Sprite X, SpriteY
+                flappyBird.largura, flappyBird.altura, //Tamanho do recorte
+                flappyBird.x, flappyBird.y, //Posição no canvas
+                flappyBird.largura, flappyBird.altura //Tamanho da imagem dentro do canvas
+            );
+        }
+    }
+    return flappyBird;
+}
+
+
 
 const mensagemGetReady = {
     srcX: 134,
@@ -103,9 +135,13 @@ const mensagemGetReady = {
 }
 
 let currentScreen = {};
-
+const globais = {};
 function changeScreen(newScreen){
     currentScreen = newScreen;
+
+    if(currentScreen.start){
+        currentScreen.start();
+    }
 }
 
 const Screens = {
@@ -114,7 +150,10 @@ const Screens = {
             background.draw();
             floor.draw();
 
-            flappyBird.instantiate();
+            globais.flappyBird.update();
+        },
+        click(){
+            globais.flappyBird.jump();
         },
         update() {
 
@@ -129,11 +168,14 @@ const Screens = {
         }
     },
     INICIO: {
+        start(){
+            globais.flappyBird = instantiateFlappyBird();
+        },
         draw() {
             background.draw();
             floor.draw();
 
-            flappyBird.draw();
+            globais.flappyBird.draw();
 
             mensagemGetReady.draw();
         },
