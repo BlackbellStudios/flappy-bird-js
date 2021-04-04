@@ -146,6 +146,98 @@ function instantiateFlappyBird(){
     return flappyBird;
 }
 
+function instantiatePipes(){
+    const pipe = {
+        largura: 52,
+        altura: 400,
+        floor:{
+            srcX: 0,
+            srcY:169,
+        },
+        sky:{
+            srcX: 52,
+            srcY:169,
+        },
+        gapBetween: 80,
+        draw() {
+            
+
+            pipe.pares.forEach(function(par) {
+                const randomY = -par.y;
+                const gapBetweenPipes = 90;
+    
+                const pipeSkyX = par.x;
+                const pipeSkyY = 0 + randomY;
+
+                ctx.drawImage(
+                    sprites,
+                    pipe.sky.srcX, pipe.sky.srcY, 
+                    pipe.largura, pipe.altura,
+                    pipeSkyX, pipeSkyY, 
+                    pipe.largura, pipe.altura
+                )
+    
+                const pipeFloorX = par.x;
+                const pipeFloorY = pipe.altura + gapBetweenPipes + randomY;
+    
+                ctx.drawImage(
+                    sprites,
+                    pipe.floor.srcX, pipe.floor.srcY, 
+                    pipe.largura, pipe.altura,
+                    pipeFloorX, pipeFloorY, 
+                    pipe.largura, pipe.altura
+                )
+
+                par.pipeSky = {
+                    x: pipeSkyX,
+                    y: pipe.altura + pipeSkyY
+                }
+                par.pipeFloor = {
+                    x: pipeFloorX,
+                    y: pipeFloorY
+                }
+            });  
+        },
+        isColliderPlayer(par){
+            const headPlayer = globais.flappyBird.y;
+            const footPlayer = globais.flappyBird.y + globais.flappyBird.altura;
+
+            if(globais.flappyBird.x >= par.x){
+                if(headPlayer <= par.pipeSky.y){
+                    return true;
+                }
+                if(footPlayer >= par.pipeFloor.y){
+                    return true;
+                }
+            }
+            return false;
+        },
+        pares:[],
+        update(){
+            const pass100Frames = frame % 100 === 0;
+            if(pass100Frames){
+                pipe.pares.push({
+                    x: canvas.width, y: 150 * (Math.random() + 1),
+                });
+            }
+
+            pipe.pares.forEach(function(par){
+                par.x = par.x-2;
+
+                if(pipe.isColliderPlayer(par)){
+                    changeScreen(Screens.INICIO);
+                }
+
+                if(par.x + pipe.largura <=0){
+                    pipe.pares.shift();
+                }
+            });
+        }
+    }
+
+    return pipe;
+}
+
 const mensagemGetReady = {
     srcX: 134,
     srcY: 0,
@@ -179,14 +271,15 @@ const Screens = {
     JOGO: {
         draw() {
             background.draw();
+            globais.pipes.draw();
             globais.floor.draw();
-
             globais.flappyBird.update();
         },
         click(){
             globais.flappyBird.jump();
         },
         update() {
+            globais.pipes.update();
             globais.floor.update();
         }
     },
@@ -202,13 +295,15 @@ const Screens = {
         start(){
             globais.flappyBird = instantiateFlappyBird();
             globais.floor = instantiateFloor();
+            globais.pipes = instantiatePipes();
         },
         draw() {
             background.draw();
-            globais.floor.draw();
+            
 
             globais.flappyBird.draw();
-
+            
+            globais.floor.draw();
             mensagemGetReady.draw();
         },
         update() {
