@@ -36,19 +36,17 @@ const background = {
     }
 }
 
+function isCollider(flappyBird, floor) {
+    const flappyBirdY = flappyBird.y + flappyBird.altura;
+    const floorY = floor.y;
 
-
-function isCollider(flappyBird, floor){
-const flappyBirdY = flappyBird.y + flappyBird.altura;
-const floorY = floor.y;
-
-if(flappyBirdY >= floorY){
-    return true;
-}
+    if (flappyBirdY >= floorY) {
+        return true;
+    }
     return false;
 }
 
-function instantiateFloor(){
+function instantiateFloor() {
     const floor = {
         srcX: 0,
         srcY: 610,
@@ -56,20 +54,20 @@ function instantiateFloor(){
         altura: 112,
         x: 0,
         y: canvas.height - 112,
-    update(){
-        const movementFloor = 1;
-        const repetY = floor.largura / 2;
-        const move = floor.x - movementFloor;
+        update() {
+            const movementFloor = 1;
+            const repetY = floor.largura / 2;
+            const move = floor.x - movementFloor;
 
-        floor.x = move % repetY;
-    },
+            floor.x = move % repetY;
+        },
         draw() {
             ctx.drawImage(
                 sprites,
                 floor.srcX, floor.srcY, floor.largura, floor.altura,
                 floor.x, floor.y, floor.largura, floor.altura
             );
-    
+
             ctx.drawImage(
                 sprites,
                 floor.srcX, floor.srcY, floor.largura, floor.altura,
@@ -80,7 +78,7 @@ function instantiateFloor(){
     return floor;
 }
 
-function instantiateFlappyBird(){
+function instantiateFlappyBird() {
     const flappyBird = {
         srcX: 0,
         srcY: 0,
@@ -88,48 +86,48 @@ function instantiateFlappyBird(){
         altura: 24,
         x: 10,
         y: 60,
-        pulo:4.6,
+        pulo: 4.6,
         velocidade: 0,
         gravidade: 0.25,
-    
+
         update() {
-            if(isCollider(flappyBird, globais.floor)){
+            if (isCollider(flappyBird, globais.floor)) {
                 flappyBird.draw();
                 sound_HIT.play();
 
                 setTimeout(() => {
-                    changeScreen(Screens.INICIO);
+                    changeScreen(Screens.GAME_OVER);
                 }, 500);
-                
+
                 return;
             }
-    
+
             flappyBird.velocidade = flappyBird.velocidade + flappyBird.gravidade;
             flappyBird.y = flappyBird.y + flappyBird.velocidade;
-    
+
             flappyBird.draw();
         },
-        jump(){
+        jump() {
             flappyBird.velocidade = - flappyBird.pulo;
         },
-        frames:[
-            {srcX: 0, srcY: 0, },
-            {srcX: 0, srcY: 26,},
-            {srcX: 0, srcY: 52,},
-            {srcX: 0, srcY: 26,},
+        frames: [
+            { srcX: 0, srcY: 0, },
+            { srcX: 0, srcY: 26, },
+            { srcX: 0, srcY: 52, },
+            { srcX: 0, srcY: 26, },
         ],
         currentFrame: 0,
-        updateCurrentFrame(){
+        updateCurrentFrame() {
             const frameInterval = 10;
             const frameIntervalPass = frame % frameInterval === 0;
 
-            if(frameIntervalPass){
+            if (frameIntervalPass) {
                 const baseIncrement = 1;
                 const increment = baseIncrement + flappyBird.currentFrame;
                 const baseRepet = flappyBird.frames.length;
                 flappyBird.currentFrame = increment % baseRepet;
             }
-            
+
         },
         draw() {
             flappyBird.updateCurrentFrame();
@@ -146,45 +144,45 @@ function instantiateFlappyBird(){
     return flappyBird;
 }
 
-function instantiatePipes(){
+function instantiatePipes() {
     const pipe = {
         largura: 52,
         altura: 400,
-        floor:{
+        floor: {
             srcX: 0,
-            srcY:169,
+            srcY: 169,
         },
-        sky:{
+        sky: {
             srcX: 52,
-            srcY:169,
+            srcY: 169,
         },
         gapBetween: 80,
         draw() {
-            
 
-            pipe.pares.forEach(function(par) {
+
+            pipe.pares.forEach(function (par) {
                 const randomY = -par.y;
                 const gapBetweenPipes = 90;
-    
+
                 const pipeSkyX = par.x;
                 const pipeSkyY = 0 + randomY;
 
                 ctx.drawImage(
                     sprites,
-                    pipe.sky.srcX, pipe.sky.srcY, 
+                    pipe.sky.srcX, pipe.sky.srcY,
                     pipe.largura, pipe.altura,
-                    pipeSkyX, pipeSkyY, 
+                    pipeSkyX, pipeSkyY,
                     pipe.largura, pipe.altura
                 )
-    
+
                 const pipeFloorX = par.x;
                 const pipeFloorY = pipe.altura + gapBetweenPipes + randomY;
-    
+
                 ctx.drawImage(
                     sprites,
-                    pipe.floor.srcX, pipe.floor.srcY, 
+                    pipe.floor.srcX, pipe.floor.srcY,
                     pipe.largura, pipe.altura,
-                    pipeFloorX, pipeFloorY, 
+                    pipeFloorX, pipeFloorY,
                     pipe.largura, pipe.altura
                 )
 
@@ -196,39 +194,40 @@ function instantiatePipes(){
                     x: pipeFloorX,
                     y: pipeFloorY
                 }
-            });  
+            });
         },
-        isColliderPlayer(par){
+        isColliderPlayer(par) {
             const headPlayer = globais.flappyBird.y;
             const footPlayer = globais.flappyBird.y + globais.flappyBird.altura;
 
-            if(globais.flappyBird.x >= par.x){
-                if(headPlayer <= par.pipeSky.y){
+            if ((globais.flappyBird.x + (globais.flappyBird.largura - 6)) >= par.x) {
+                if (headPlayer <= par.pipeSky.y) {
                     return true;
                 }
-                if(footPlayer >= par.pipeFloor.y){
+                if (footPlayer >= par.pipeFloor.y) {
                     return true;
                 }
             }
             return false;
         },
-        pares:[],
-        update(){
+        pares: [],
+        update() {
             const pass100Frames = frame % 100 === 0;
-            if(pass100Frames){
+            if (pass100Frames) {
                 pipe.pares.push({
                     x: canvas.width, y: 150 * (Math.random() + 1),
                 });
             }
 
-            pipe.pares.forEach(function(par){
-                par.x = par.x-2;
+            pipe.pares.forEach(function (par) {
+                par.x = par.x - 2;
 
-                if(pipe.isColliderPlayer(par)){
-                    changeScreen(Screens.INICIO);
+                if (pipe.isColliderPlayer(par)) {
+                    sound_HIT.play();
+                    changeScreen(Screens.GAME_OVER);
                 }
 
-                if(par.x + pipe.largura <=0){
+                if (par.x + pipe.largura <= 0) {
                     pipe.pares.shift();
                 }
             });
@@ -236,6 +235,27 @@ function instantiatePipes(){
     }
 
     return pipe;
+}
+
+function instantiateScore() {
+    const score = {
+        pontuacao: 0,
+        draw() {
+            ctx.font = '35px "VT323"';
+            ctx.textAlign = 'right';
+            ctx.fillStyle = 'white';
+            ctx.fillText(`${score.pontuacao}`, canvas.width - 10, 35);
+        },
+        update() {
+            const frameInterval = 100;
+            const frameIntervalPass = frame % frameInterval === 0;
+
+            if (frameIntervalPass) {
+                score.pontuacao += 1;
+            }
+        },
+    }
+    return score;
 }
 
 const mensagemGetReady = {
@@ -257,59 +277,87 @@ const mensagemGetReady = {
     }
 }
 
+
+const mensagemGameOver = {
+    srcX: 134,
+    srcY: 153,
+    largura: 226,
+    altura: 200,
+    x: (canvas.width / 2) - 226 / 2,
+    y: 50,
+
+    draw() {
+        ctx.drawImage(
+            sprites,
+            mensagemGameOver.srcX, mensagemGameOver.srcY,
+            mensagemGameOver.largura, mensagemGameOver.altura,
+            mensagemGameOver.x, mensagemGameOver.y,
+            mensagemGameOver.largura, mensagemGameOver.altura
+        );
+    }
+}
+
 let currentScreen = {};
 const globais = {};
-function changeScreen(newScreen){
+function changeScreen(newScreen) {
     currentScreen = newScreen;
 
-    if(currentScreen.start){
+    if (currentScreen.start) {
         currentScreen.start();
     }
 }
 
 const Screens = {
     JOGO: {
+        start() {
+            globais.score = instantiateScore();
+        },
         draw() {
             background.draw();
             globais.pipes.draw();
             globais.floor.draw();
             globais.flappyBird.update();
+            globais.score.draw();
         },
-        click(){
+        click() {
             globais.flappyBird.jump();
         },
         update() {
             globais.pipes.update();
             globais.floor.update();
+            globais.score.update();
         }
     },
-    GAMEOVER: {
+    GAME_OVER: {
         draw() {
-
+            mensagemGameOver.draw();
         },
         update() {
 
+        },
+        click(){
+            changeScreen(Screens.INICIO);
         }
     },
     INICIO: {
-        start(){
+        start() {
             globais.flappyBird = instantiateFlappyBird();
             globais.floor = instantiateFloor();
             globais.pipes = instantiatePipes();
         },
         draw() {
             background.draw();
-            
+
 
             globais.flappyBird.draw();
-            
+
             globais.floor.draw();
             mensagemGetReady.draw();
         },
         update() {
             globais.floor.update();
         },
-        click(){
+        click() {
             changeScreen(Screens.JOGO);
         }
     }
@@ -323,8 +371,8 @@ function Loop() {
     requestAnimationFrame(Loop);
 }
 
-window.addEventListener('click', function(){
-    if(currentScreen.click){
+window.addEventListener('click', function () {
+    if (currentScreen.click) {
         currentScreen.click();
     }
 });
