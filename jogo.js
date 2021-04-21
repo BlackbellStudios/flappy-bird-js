@@ -4,8 +4,24 @@ let frame = 0;
 const sound_HIT = new Audio();
 sound_HIT.src = './efeitos/hit.wav';
 
-const sprites = new Image();
-sprites.src = './sprites.png';
+let sprites = new Image();
+
+let sprites_original = new Image();
+let sprites_dark = new Image();
+
+sprites_original.src = './sprites.png';
+sprites_dark.src = './sprites_dark.png';
+
+sprites = sprites_original;
+
+function makeDark() {
+    var element = document.body;
+    element.classList.toggle("dark-mode");
+
+    sprites === sprites_original ? sprites = sprites_dark : sprites = sprites_original;
+
+}
+
 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
@@ -108,7 +124,7 @@ function instantiateFlappyBird() {
             flappyBird.draw();
         },
         jump() {
-            flappyBird.velocidade = - flappyBird.pulo;
+            flappyBird.velocidade = -flappyBird.pulo;
         },
         frames: [
             { srcX: 0, srcY: 0, },
@@ -160,7 +176,7 @@ function instantiatePipes() {
         draw() {
 
 
-            pipe.pares.forEach(function (par) {
+            pipe.pares.forEach(function(par) {
                 const randomY = -par.y;
                 const gapBetweenPipes = 90;
 
@@ -215,11 +231,12 @@ function instantiatePipes() {
             const pass100Frames = frame % 100 === 0;
             if (pass100Frames) {
                 pipe.pares.push({
-                    x: canvas.width, y: 150 * (Math.random() + 1),
+                    x: canvas.width,
+                    y: 150 * (Math.random() + 1),
                 });
             }
 
-            pipe.pares.forEach(function (par) {
+            pipe.pares.forEach(function(par) {
                 par.x = par.x - 2;
 
                 if (pipe.isColliderPlayer(par)) {
@@ -299,6 +316,7 @@ const mensagemGameOver = {
 
 let currentScreen = {};
 const globais = {};
+
 function changeScreen(newScreen) {
     currentScreen = newScreen;
 
@@ -335,7 +353,7 @@ const Screens = {
         update() {
 
         },
-        click(){
+        click() {
             changeScreen(Screens.INICIO);
         }
     },
@@ -371,7 +389,7 @@ function Loop() {
     requestAnimationFrame(Loop);
 }
 
-window.addEventListener('click', function () {
+canvas.addEventListener('click', function() {
     if (currentScreen.click) {
         currentScreen.click();
     }
