@@ -4,6 +4,8 @@ let frame = 0;
 const sound_HIT = new Audio();
 sound_HIT.src = './efeitos/hit.wav';
 
+let backgroundColor = '#70C5CE';
+
 let sprites = new Image();
 
 let sprites_original = new Image();
@@ -19,14 +21,17 @@ function makeDark() {
     element.classList.toggle("dark-mode");
 
     sprites === sprites_original ? sprites = sprites_dark : sprites = sprites_original;
-
+    backgroundColor === '#70C5CE' ? backgroundColor = '#246369' : backgroundColor = '#70C5CE';
 }
+
+
+
 
 
 const canvas = document.querySelector('canvas');
 const ctx = canvas.getContext('2d');
 
-const background = {
+let background = {
     srcX: 390,
     srcY: 0,
     largura: 275,
@@ -35,7 +40,7 @@ const background = {
     y: canvas.height - 204,
 
     draw() {
-        ctx.fillStyle = '#70C5CE';
+        ctx.fillStyle = backgroundColor;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
         ctx.drawImage(
